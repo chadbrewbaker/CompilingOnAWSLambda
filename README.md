@@ -1,7 +1,7 @@
 # CompilingOnAWSLambda
 July 2018 DevOpsDSM talk
 
-This talk is about parallel "serverless" builds. Concrete examples are Linux and C++ but feel free to ask about other build toolchains.
+This talk is about engineering parallel "serverless" builds. Concrete examples are Linux and C++ but feel free to ask about other build toolchains.
 
 Information Theory 101
 ![In this house we obey the laws of thermodynamics!](https://pbs.twimg.com/media/DOjUx5BWsAAwR9h.jpg)
@@ -22,11 +22,13 @@ I don't want to compile the compiler.
 I want serverless command line tools, but I don't want to host them.
 * Lambdamart tools through RapidAPI and AWS Marketplace are in beta.
 * Reach out to Lambdamart for enterprise hosting
-* Lambdamart can crush Hadoop [235x faster than Hadoop on one node](https://adamdrake.com/command-line-tools-can-be-235x-faster-than-your-hadoop-cluster.html)
+* Lambdamart can crush Hadoop. [235x faster than Hadoop on only node](https://adamdrake.com/command-line-tools-can-be-235x-faster-than-your-hadoop-cluster.html)
 ```bash
 # Set up Lambamart API key and endpoint
 # Set up method to authorize temporary S3 credentials
 lambdamart sort s3://MyBucket/foo.txt -o s3://myOtherBucket/fooSorted.txt
+lambdamart -p100 map_sort s3://MyBucket/foo -o s3://myOtherBucket/fooSorted
+#Sort every file using up to 100 concurrent AWS Lambda instances
 lambdamart gfactor 234234234
 # 234234234: 2 3 3 3 13 333667
 lambdamart build s3://MyBucket/source s3://MyBucket/artifacts
@@ -85,7 +87,6 @@ Efficencies:
 * Files like system headers may be available on build nodes and do not require network transfer
 * Strip unused depednencies [Include what you use](https://github.com/include-what-you-use/include-what-you-use)
 * Use forward declares of types instead of includes to minimize duplicate compliation
-* Pre-process files from text to binary in-memory format
 * Use mutual informaton of dependinces for file compression [Vitanyi 2003](https://arxiv.org/abs/cs/0312044)
 * Refactor slowly building files
 * Use sparse linking so you don't have to include entire large libraries
@@ -143,10 +144,23 @@ gtime clang foo.c
 ## Step 3: Build the dependency graph
 * Python script
 
-Step 4: Solve for a build plan
-* Z3 SMT Solver
-* Python bindings if you are allergic to C or Lisp interfaces
+## Step 4: Solve for a build plan
+* Z3 SMT job shop scheduling problem
+* Solve for fastest batch build given N worker nodes
+* Can skip SMT solver and use naive master/slave build over [PyWren](https://www.slideshare.net/AmazonWebServices/massively-parallel-data-processing-with-pywren-and-aws-lambda-srv424-reinvent-2017)
 
+## Step 5: Build it
+* Hack MPI_Init() and stand on the sholders of supercomputer developers to optimize artifact transfer
+* MPI requires periodic resync as Lamdas fall out or are added to the work pool
+* Could use AWS SQS retry or AWSCodebuild master with Lambda slaves
+* Can use AWS Codebuild or Fargate instances as fat lambdas
+
+## Step 6: Rebuilds
+* Decide artifact cache storage strategy. Use hashes as keys.
+* Merkle DAG cheaper than full hash of ancestors.
+* Computing rebuild strategy is p-complete? (sequential)
+* Can pre-process files from text to binary in-memory compiler format
+* Can zip together commonly shared artifacts
 
 Scratch notes:
 
