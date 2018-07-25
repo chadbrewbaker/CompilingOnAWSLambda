@@ -3,42 +3,61 @@ July 2018 DevOpsDSM talk
 
 
 
-Information Theory
+Information Theory 101
 * System Latency: How long does a system take to respond to a resquest?
-* Distance Latency : How long does information have to travel? (Speed of light bounded)
+* Distance Latency : How far does information have to travel? Fastest is 1 foot per nanosecond (speed of light). 
 * Bandwith: How much information can be transered in a unit of time.
 * Transfer time =  SystemLatency + (Distance * DistanceLatency) + (FileSize / Bandwidth)
+* Random File: There exists no program that will emit the file that has shorter length of the file itself
+* Logarithm Base K: How many times you can chop a log into K equal portions until you reach a portion of unit size.
+* Size of counters, depth of K-ary trees: Logarithm Base K
 
-Build sytems:
+![In this house we obey the laws of thermodynamics!](https://pbs.twimg.com/media/DOjUx5BWsAAwR9h.jpg)
+
+
+
+What is AWS Lambda?
+* Amazon Linux Container
+* Executes a static zip file up to 50MB with a small user supplied JSON payload
+* Runtimes in supported languages, but you can shell out or dynamically load any native binary.
+* Max 5 minute runtime
+* May download and execute more code from the network
+* Charged per 1/10th second used. Large startup latency for Java SDK, lowest for native Go SDK.
+* Throttled by memory allocated
+* /tmp folder for scratch local storage
+* Intel Xenon. Beware, may execute on different generations breaking new SIMD instructions
+
+
+Most common build sytems:
 * Make - Stuart Feldman at Bell Labs (1976) language agnostic
 * Excel - Microsoft (1993) cell based script evaluation
+* CMake -  (2000) - Emits Make, XCode, Ninja, Visual Studio, ... 
 
-* CMake -  (2000) - (Make, XCode, Ninja Visual Studio) 
+Java Build Systems:
+* Ant (2000) - Based on Make 
+* Maven (2004) - Less XML 
+* Gradle (2007) - Build rules in Groovy
+* SBT (2008) - Scala/Java
 
-* Ant - (2000) Java
-* Maven - (2004) Java
-* Gradle - (2007) Java 
-* SBT - (2008) Scala/Java
-
-* DistCC (2002) - TCP/SSH syncronized
+Newest kids on the block:
+* DistCC (2002) - TCP/SSH syncronized parallel builds
 * Ninja (2012) - Developed for Google Chrome
-* Buck - (2013) Facebook 
-* Bazel - (2015)  Google limited feature open source of their Blaze build system (C,C++,Java,Go, Python, Objective-C, Bash)
-
-* Webpack, Grunt, Gulp, Yeoman - Javascript ...
+* Buck (2013) - Facebook 
+* Bazel (2015) - Google [Refused to support AWS yesterday](https://github.com/bazelbuild/bazel/pull/4889)
+* Webpack, Grunt, Gulp, Yeoman - Javascript shiny...
 
 
 Universal concepts:
 * Directed Acyclic Graph of build dependencies
 * Scheduling the DAG
 
-Non-determinism:
-* Timestamps
+Non-determinism and impurity:
+* Direct reliance on system state (timestamps ...)
 * Benchmark/Integration test results that rely on system state
 * Pulling in depedencies instead of pinning them
 
 Bottlenecks:
-* You must pay the latency and bandwith costs of moving files
+* Must obey the laws of physics and pay the latency and bandwith costs of moving files
 * Context Free Grammar Parsing, [Complexity of sparse matrix-matrix-multiply - Valiant 1975](https://arxiv.org/abs/cs/0112018)
 * Linking object files is usually linear complexity
 * Macro/Template application can be costly
@@ -49,7 +68,7 @@ Efficencies:
 * Files like system headers may be available on build nodes and do not require network transfer
 * Use forward declares of types instead of includes to minimize duplicate compliation
 * Pre-process files from text to binary in-memory format
-
+* Use mutual informaton of dependinces for file compression [Vitanyi 2003](https://arxiv.org/abs/cs/0312044)
 
 The process:
 * Intercept/log calls to compiler and linker
