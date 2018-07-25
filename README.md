@@ -31,7 +31,7 @@ lambdamart -p100 map_sort s3://MyBucket/foo -o s3://myOtherBucket/fooSorted
 #Sort every file using up to 100 concurrent AWS Lambda instances
 lambdamart gfactor 234234234
 # 234234234: 2 3 3 3 13 333667
-lambdamart build s3://MyBucket/source s3://MyBucket/artifacts
+lambdamart -p100 build s3://MyBucket/source s3://MyBucket/artifacts
 ```
 
 
@@ -157,7 +157,8 @@ gtime clang foo.c
 
 ## Step 6: Rebuilds
 * Decide artifact cache storage strategy. Use hashes as keys.
-* Merkle DAG cheaper than full hash of ancestors.
+* What do you evict when it fills? 
+* Merkle DAG cheaper than full hash of ancestors. Can use [NAUTY](http://pallini.di.uniroma1.it) for Merkle compaction order.
 * Computing rebuild strategy is p-complete? (sequential)
 * Can pre-process files from text to binary in-memory compiler format
 * Can zip together commonly shared artifacts
