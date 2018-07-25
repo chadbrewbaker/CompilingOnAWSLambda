@@ -1,7 +1,7 @@
 # CompilingOnAWSLambda
 July 2018 DevOpsDSM talk
 
-
+This talk is about parallel "serverless" builds. Concrete examples are Linux and C++ but feel free to ask about other build toolchains.
 
 Information Theory 101
 ![In this house we obey the laws of thermodynamics!](https://pbs.twimg.com/media/DOjUx5BWsAAwR9h.jpg)
@@ -11,11 +11,26 @@ Information Theory 101
 * Transfer time =  SystemLatency + (Distance * DistanceLatency) + (FileSize / Bandwidth)
 * Random File: There exists no program that will emit the file that has shorter length of the file itself
 * Logarithm Base K: How many times you can chop a log into K equal portions until you reach a portion of unit size.
-* Size of counters, depth of K-ary trees: Logarithm Base K
 ![Logarithm visual](https://www.garrettwade.com/media/catalog/product/cache/1/image/730x/0dc2d03fe217f8c83829496872af24a0/2/0/20f0101-westernlogsaw-web-0131_c_r.jpg)
+* Size of counters, depth of K-ary trees: Logarithm Base K
 
 
+I don't want to compile the compiler.
+* [Use Lambdamart GCC for AWS Lambda](http://www.lambdamart.com)
+* Reach out to Lambdamart if you want another build chain supported
 
+I want serverless command line tools, but I don't want to host them.
+* Lambdamart tools through RapidAPI and AWS Marketplace are in beta.
+* Reach out to Lambdamart for enterprise hosting
+* Lambdamart can crush Hadoop [235x faster than Hadoop on one node](https://adamdrake.com/command-line-tools-can-be-235x-faster-than-your-hadoop-cluster.html)
+```bash
+# Set up Lambamart API key and endpoint
+# Set up method to authorize temporary S3 credentials
+lambdamart sort s3://MyBucket/foo.txt -o s3://myOtherBucket/fooSorted.txt
+lambdamart gfactor 234234234
+# 234234234: 2 3 3 3 13 333667
+lambdamart build s3://MyBucket/source s3://MyBucket/artifacts
+```
 
 
 What is AWS Lambda?
@@ -31,9 +46,9 @@ What is AWS Lambda?
 
 
 Most common build sytems:
-* Make - Stuart Feldman at Bell Labs (1976) language agnostic
-* Excel - Microsoft (1993) cell based script evaluation
-* CMake -  (2000) - Emits Make, XCode, Ninja, Visual Studio, ... 
+* Make (1976) - Stuart Feldman at Bell Labs, language agnostic
+* Excel (1993) - Microsoft cell based script evaluation
+* CMake (2000) - Emits Make, XCode, Ninja, Visual Studio, ... 
 
 Java Build Systems:
 * Ant (2000) - Based on Make 
@@ -46,7 +61,7 @@ Newest kids on the block:
 * Ninja (2012) - Developed for Google Chrome
 * Buck (2013) - Facebook 
 * Bazel (2015) - Google [Refused to support AWS yesterday](https://github.com/bazelbuild/bazel/pull/4889)
-* Webpack, Grunt, Gulp, Yeoman - Javascript shiny...
+* Webpack, Grunt, Gulp, Yeoman - Javascript shiny
 
 
 Universal concepts:
@@ -59,7 +74,7 @@ Non-determinism and impurity:
 * Pulling in depedencies instead of pinning them
 
 Bottlenecks:
-* Must obey the laws of physics and pay the latency and bandwith costs of moving files
+* Must obey the laws of physics and pay latency and bandwith costs
 * Context Free Grammar Parsing, [Complexity of sparse matrix-matrix-multiply - Valiant 1975](https://arxiv.org/abs/cs/0112018)
 * Linking object files is usually linear complexity
 * Macro/Template application can be costly
@@ -68,25 +83,27 @@ Efficencies:
 * Keep track of artifacts that do not need rebuilt
 * Artifacts can be hashed to infer changes (Git for example)
 * Files like system headers may be available on build nodes and do not require network transfer
+* Strip unused depednencies [Include what you use](https://github.com/include-what-you-use/include-what-you-use)
 * Use forward declares of types instead of includes to minimize duplicate compliation
 * Pre-process files from text to binary in-memory format
 * Use mutual informaton of dependinces for file compression [Vitanyi 2003](https://arxiv.org/abs/cs/0312044)
+* Refactor slowly building files
+* Use sparse linking so you don't have to include entire large libraries
+* Don't be like Megacorp and use Russian doll artifacts. Flat trees, not linear order of artifacts.
 
-The process:
-* Intercept/log calls to compiler and linker
+Plan of attack:
+* Intercept calls to compiler and linker
 * Record compile times for each build step
 * Record file sizes
+* Estimate bandwidth/latency costs for your build nodes
 * Build artifact graph
 * Solve for build plan
 
-
-Recompiles:
-* Cache precompiled headers (larger file size, lower processing time)
-* Cache LLVM IR 
-* Refactor slowly building files. (Do you really need that complex template?)
-* Don't be like Megacorp and use Russian doll artifacts. Flat trees, not linear order of artifacts.
-* Strip unused includes [Include what you use](https://github.com/include-what-you-use/include-what-you-use)
-
+AWS Lambda Specific Issues:
+* Containers are extremely lean, have to package missing library dependencies
+* Containers change contents without much notice, must Hoover files from live container
+* Store dependencies in S3, load them to /tmp/ at Lambda startup
+* GCC is larger than 50MB without taking an axe to it, you have to load it from S3
 
 "-MD" both compiles and emits makefile
 
@@ -94,7 +111,7 @@ Recompiles:
 
 [GCC command line flags](https://github.com/gcc-mirror/gcc/blob/274d31f044ac1c4610b67d2220237f0387aa367f/gcc/c-family/c.opt)
 
-Step 1: Generate the JSON compilation database
+## Step 1: Generate the JSON compilation database
 
 
 [JSON Compiliation Databases](http://clang.llvm.org/docs/JSONCompilationDatabase.html)
@@ -113,20 +130,22 @@ Entries in the JSON compilation database look like this:
 ```
 
 
-Step 2: 
-Annotate with clang -H to get header files
-Annotate with timings to get compilation times for each entry
+## Step 2: Use the compiler to extract file dependencies and estimate compile times
+```bash
+clang -H foo.c
+# Will extract all header files used by foo.c
+```
+```bash
+gtime clang foo.c
+# Optionlly collect the time for each artifact build
+```
 
-Step 3:
-Build the dependency graph
-Annotate with file sizes
+## Step 3: Build the dependency graph
+* Python script
 
-Step 4:
-Put annotated dependency graph into SMT solver, get a build plan.
-
-Step 5: 
-Compile
-
+Step 4: Solve for a build plan
+* Z3 SMT Solver
+* Python bindings if you are allergic to C or Lisp interfaces
 
 
 Scratch notes:
