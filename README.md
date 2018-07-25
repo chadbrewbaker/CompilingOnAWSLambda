@@ -4,6 +4,7 @@ July 2018 DevOpsDSM talk
 
 
 Information Theory 101
+![In this house we obey the laws of thermodynamics!](https://pbs.twimg.com/media/DOjUx5BWsAAwR9h.jpg)
 * System Latency: How long does a system take to respond to a resquest?
 * Distance Latency : How far does information have to travel? Fastest is 1 foot per nanosecond (speed of light). 
 * Bandwith: How much information can be transered in a unit of time.
@@ -11,8 +12,9 @@ Information Theory 101
 * Random File: There exists no program that will emit the file that has shorter length of the file itself
 * Logarithm Base K: How many times you can chop a log into K equal portions until you reach a portion of unit size.
 * Size of counters, depth of K-ary trees: Logarithm Base K
+![Logarithm visual](https://www.garrettwade.com/media/catalog/product/cache/1/image/730x/0dc2d03fe217f8c83829496872af24a0/2/0/20f0101-westernlogsaw-web-0131_c_r.jpg)
 
-![In this house we obey the laws of thermodynamics!](https://pbs.twimg.com/media/DOjUx5BWsAAwR9h.jpg)
+
 
 
 
