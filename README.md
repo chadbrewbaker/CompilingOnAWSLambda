@@ -3,70 +3,71 @@ July 2018 DevOpsDSM talk
 
 
 
-Parallel builing at scale
+Information Theory
+* System Latency: How long does a system take to respond to a resquest?
+* Distance Latency : How long does information have to travel? (Speed of light bounded)
+* Bandwith: How much information can be transered in a unit of time.
+* Transfer time =  SystemLatency + (Distance * DistanceLatency) + (FileSize / Bandwidth)
 
+Build sytems:
+* Make - Stuart Feldman at Bell Labs (1976) language agnostic
+* Excel - Microsoft (1993) cell based script evaluation
 
-Latency: How long do you have to wait to establish get any information back. (Speed of light bounded)
-Bandwith: How much information can be transered in a unit of time.
+* CMake -  (2000) - (Make, XCode, Ninja Visual Studio) 
 
-Information transfer time = Latency + size/bandwidth
+* Ant - (2000) Java
+* Maven - (2004) Java
+* Gradle - (2007) Java 
+* SBT - (2008) Scala/Java
 
+* DistCC (2002) - TCP/SSH syncronized
+* Ninja (2012) - Developed for Google Chrome
+* Buck - (2013) Facebook 
+* Bazel - (2015)  Google limited feature open source of their Blaze build system (C,C++,Java,Go, Python, Objective-C, Bash)
 
-Make - Stuart Feldman at Bell Labs (1976) language agnostic
-Excel - Microsoft (1993) cell based script evaluation
-
-CMake -  (2000) - (Make, XCode, Ninja Visual Studio) 
-
-Ant - (2000) Java
-Maven - (2004) Java
-Gradle - (2007) Java 
-SBT - (2008) Scala/Java
-
-DistCC (2002) - TCP/SSH syncronized
-Ninja (2012) - Developed for Google Chrome
-Buck - (2013) Facebook 
-Bazel - (2015)  Google limited feature open source of their Blaze build system (C,C++,Java,Go, Python, Objective-C, Bash)
-
-Webpack, Grunt, Gulp, Yeoman - Javascript ...
+* Webpack, Grunt, Gulp, Yeoman - Javascript ...
 
 
 Universal concepts:
-A Directed Acyclic Graph of build dependencies.
-Scheduling the DAG
+* Directed Acyclic Graph of build dependencies
+* Scheduling the DAG
 
 Non-determinism:
-Timestamps
-Benchmark/Integration test results
+* Timestamps
+* Benchmark/Integration test results that rely on system state
+* Pulling in depedencies instead of pinning them
 
 Bottlenecks:
-Context Free Grammar Parsing  (Complexity of sparse matrix-matrix-multiply - Valiant 1976)
-Linking - usually linear
-Macro/Template application - Varies
+* You must pay the latency and bandwith costs of moving files
+* Context Free Grammar Parsing, [Complexity of sparse matrix-matrix-multiply - Valiant 1975](https://arxiv.org/abs/cs/0112018)
+* Linking object files is usually linear complexity
+* Macro/Template application can be costly
 
 Efficencies:
-Hash large artifacts to infer membership
+* Keep track of artifacts that do not need rebuilt
+* Artifacts can be hashed to infer changes (Git for example)
+* Files like system headers may be available on build nodes and do not require network transfer
+* Use forward declares of types instead of includes to minimize duplicate compliation
+* Pre-process files from text to binary in-memory format
 
 
-
+The process:
 * Intercept/log calls to compiler and linker
 * Record compile times for each build step
-* Build artifact graph. Annotate with file sizes and compile times
+* Record file sizes
+* Build artifact graph
 * Solve for build plan
 
-Recompiles:
-Cache precompiled headers (larger file size, lower processing time)
-Cache LLVM IR 
-Refactor slowly building files. (Do you really need that complex template?)
-Don't be like Megacorp and use a Russian doll artifacts. Flat trees, not linear builds.
 
-Strip unused includes:
-https://github.com/include-what-you-use/include-what-you-use
+Recompiles:
+* Cache precompiled headers (larger file size, lower processing time)
+* Cache LLVM IR 
+* Refactor slowly building files. (Do you really need that complex template?)
+* Don't be like Megacorp and use Russian doll artifacts. Flat trees, not linear order of artifacts.
+* Strip unused includes [Include what you use](https://github.com/include-what-you-use/include-what-you-use)
 
 
 "-MD" both compiles and emits makefile
-
-Issue with dotfile generation
-https://stackoverflow.com/questions/51416847/clang-usage-of-dependency-dot-option/51428076#51428076
 
 [Open source tools for examining include dependencies](http://gernotklingler.com/blog/open-source-tools-examine-and-adjust-include-dependencies/)
 
@@ -104,6 +105,13 @@ Put annotated dependency graph into SMT solver, get a build plan.
 
 Step 5: 
 Compile
+
+
+
+Scratch notes:
+
+[Dotfile generation may be broken on the latest Clang](https://stackoverflow.com/questions/51416847/clang-usage-of-dependency-dot-option/51428076#51428076)
+
 
 
 
