@@ -68,21 +68,27 @@ https://github.com/include-what-you-use/include-what-you-use
 Issue with dotfile generation
 https://stackoverflow.com/questions/51416847/clang-usage-of-dependency-dot-option/51428076#51428076
 
-http://gernotklingler.com/blog/open-source-tools-examine-and-adjust-include-dependencies/
-https://github.com/gcc-mirror/gcc/blob/274d31f044ac1c4610b67d2220237f0387aa367f/gcc/c-family/c.opt
+[Open source tools for examining include dependencies](http://gernotklingler.com/blog/open-source-tools-examine-and-adjust-include-dependencies/)
+
+[GCC command line flags](https://github.com/gcc-mirror/gcc/blob/274d31f044ac1c4610b67d2220237f0387aa367f/gcc/c-family/c.opt)
 
 Step 1: Generate the JSON compilation database
 
-http://clang.llvm.org/docs/JSONCompilationDatabase.html
 
-cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=YES .. 
-creates a "compile_commands.json"
+[JSON Compiliation Databases](http://clang.llvm.org/docs/JSONCompilationDatabase.html)
 
+```bash
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=YES ..
+# Creates the file compile_commands.json
+```
+Entries in the JSON compilation database look like this:
+```json
 {
   "directory": "/Users/crb002/github/codeanalysis/libpng/build",
   "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc -DPNG_INTEL_SSE_OPT=1 -I/Users/crb002/github/codeanalysis/libpng/build -I/Users/crb002/github/codeanalysis/libpng    -o CMakeFiles/png_static.dir/pngwrite.c.o   -c /Users/crb002/github/codeanalysis/libpng/pngwrite.c",
   "file": "/Users/crb002/github/codeanalysis/libpng/pngwrite.c"
 },
+```
 
 
 Step 2: 
