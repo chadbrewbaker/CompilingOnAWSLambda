@@ -91,3 +91,23 @@ Now run this to update each version to version 2.
 ```bash
 wsl --set-version (distro name) 2
 ```
+
+## Setting up an AmazonLinux2 container for compiling
+Amazon's repository is still stuck on CMAKE version 2.x.
+```bash
+wget https://github.com/Kitware/CMake/releases/download/v3.18.0/cmake-3.18.0.tar.gz
+tar -xvf cmake-3.18.0.tar.gz
+cd cmake-3.18.0
+./bootstrap ./bootstrap # --prefix=/usr/local should you want a different directory
+make -j6
+make install #update ~/.bashrc if required to add in path
+```
+
+
+### Musings on container compositionality/reproducibility
+* When running Docker build, have the script store the yum/apt cache, downloaded git repos, and downloaded tarballs to an external zipfile. Then have a build that pulls from the zipfile. Voila, reproducible Docker build with tracable artifacts.
+* instead of sudo make install, think about wrapping into an RPM and using the package manager - I need to try this.
+ 
+
+
+
