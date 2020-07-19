@@ -66,3 +66,12 @@ Windows Subsytem for Linux 2 gets rid of the translation layer and replaces it w
 ### Issue 1: Upgrading to Win 10 v 2004 release.
 On my system there was a blocker that my Nvidia drivers had to be manually upgraded before Microsoft would allow the update to avoid a blue screen of death:
 https://docs.microsoft.com/en-us/windows/release-information/status-windows-10-2004
+
+### Issue 2: Both Windows Update and Windows 10 Update Assistant crash
+Rather than attempting to clear the download cache I downloaded a fresh ISO. Absurd, but you have to spoof a tablet browser in Chrome so that Microsoft will give you a temporary download link: https://www.bleepingcomputer.com/news/microsoft/how-to-download-the-windows-10-2004-iso-from-microsoft/
+
+### Issue 3: Enabling WSL2
+Instructions here: https://docs.microsoft.com/en-us/windows/wsl/install-win10
+
+Now you are ready to install Docker Desktop and run it on WSL2. Instructions here: https://docs.docker.com/docker-for-windows/wsl/
+
