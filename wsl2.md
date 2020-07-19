@@ -75,3 +75,19 @@ Instructions here: https://docs.microsoft.com/en-us/windows/wsl/install-win10
 
 Now you are ready to install Docker Desktop and run it on WSL2. Instructions here: https://docs.docker.com/docker-for-windows/wsl/
 
+### Updating all your WSL images
+```bash
+wsl -l -v
+#NAME                   STATE           VERSION
+#*  Ubuntu                Stopped         1
+#  Ubuntu-20.04           Stopped         1
+#  Debian                 Stopped         1
+#  docker-desktop-data    Running         2
+#  Ubuntu-18.04           Stopped         1
+#  docker-desktop         Running         2
+#  Amazon2                Stopped         1
+```
+Now run this to update each version to version 2.
+```bash
+wsl --set-version (distro name) 2
+```
