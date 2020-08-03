@@ -51,9 +51,16 @@ make check
 #  make check-very-expensive   # To run the more expensive tests
 make install
 ```
+```bash
+pip3.8 install -U Sphinx #required by uutils coreutils
+git clone https://github.com/chadbrewbaker/coreutils
+cd coreutils
+cargo build --release
+make PREFIX=/usr/nightly install
+```
 
-
-
+First pass is copying the Rust binaries over the GNU binaries, running the GNU make check, and seeing what barfs.
+Utilities true, false, fmt, and sort had to be removed because their tests hung.
 
 
 
