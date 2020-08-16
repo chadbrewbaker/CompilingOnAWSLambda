@@ -44,7 +44,7 @@ cd coreutils
 export FORCE_UNSAFE_CONFIGURE=1 # Because the stock image runs as root
 ./configure --prefix=/usr/newgnucoreutils
 #./bootstrap #Because the README-relase told me to, not sure if needed?
-grep -n Werror ./Makefile #Nerf that line to turn off build warnings as errors
+sed -i 's/-Werror//g' Makefile #Nerf that line to turn off build warnings as errors
 make -j4
 make check
 # You need to run as non-root to get at a lot of the UNIX permission tests
